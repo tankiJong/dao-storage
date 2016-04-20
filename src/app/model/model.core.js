@@ -20,6 +20,7 @@ export class Model extends Object {
             obj[k] = new Model(obj[k]);
         }
 
+        // bind behaviors for the members
         const { enumerable, value, writable } = Object.getOwnPropertyDescriptor(obj, k);
         Object.defineProperty(this, k, {
           enumerable,

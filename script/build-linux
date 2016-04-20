@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+
+TAG="dce-ui-build"
+
+docker build -t "$TAG" -f script/DockerfileBuild$1 .
+ID=$(docker create $TAG)
+
+rm -rf dist
+docker cp $ID:/app/dist dist
+
+# Cleanup.
+docker rm -f $ID
+# docker rmi $TAG
+
+echo "Done."

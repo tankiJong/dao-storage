@@ -1,0 +1,38 @@
+FROM node:4.3-wheezy
+
+ENV NGINX_VERSION 1.7.12-1~wheezy
+
+RUN apt-key adv --keyserver pgp.mit.edu --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62  && \
+    echo "deb http://nginx.org/packages/mainline/debian/ wheezy nginx" >> /etc/apt/sources.list  && \
+    apt-get update && \
+    apt-get install -y ca-certificates nginx && \
+    rm -rf /var/lib/apt/lists/*  && \
+    ln -sf /dev/stdout /var/log/nginx/access.log && \
+    ln -sf /dev/stderr /var/log/nginx/error.log
+
+EXPOSE 80
+
+WORKDIR /app
+
+RUN npm install -g cnpm --registry=https://registry.npm.taobao.org --disturl=https://npm.taobao.org/mirrors/node
+
+RUN npm install -g bower gulp --registry=https://registry.npm.taobao.org --disturl=https://npm.taobao.org/mirrors/node
+
+COPY ./package.json /app/
+RUN npm install --registry=https://registry.npm.taobao.org --disturl=https://npm.taobao.org/mirrors/node
+
+COPY ./bower.json /app/
+
+RUN bower install --allow-root
+
+COPY . /app/
+
+ENV API_URL='/'
+
+RUN npm update --registry=https://registry.npm.taobao.org --disturl=https://npm.taobao.org/mirrors/node
+
+RUN gulp build && \
+    cp -r dist/* /usr/share/nginx/html/
+
+
+CMD nginx -g 'daemon off;'

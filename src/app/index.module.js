@@ -1,4 +1,4 @@
-import { Model } from './model';
+import { Model } from './model/model.core';
 
 
 angular.module('myApp',[])
@@ -26,7 +26,7 @@ angular.module('myApp',[])
               fuz:2,
           }
       }
-            
+
       this.fetch = function(){
           return new Model(fakeData);
       }

@@ -6,14 +6,31 @@ import { EventManager } from './event-manager';
 
 const _legalHookType = ['get', 'beforeSet', 'afterSet'];
 
-const _eventPool = {};
-_legalHookType.forEach( type => Object.defineProperty(type, {value: new Map()}));
-
 export class Model extends Object {
   constructor($obj) {
     super();
+
+    const _eventPool = {};
+    _legalHookType.forEach( type => Object.defineProperty(type, {value: new Map()}));
+
+    /* ---------- private method ---------- */
+    function runHook(type, key){
+      // if hook type illegal, break
+      if(!(_eventPool[type])){
+        throw new Error('illegal hook type');
+      }
+      if(!(_eventPool[type].get(key))){
+        throw new Error('illegal hook key');
+      }
+      _eventPool[type].get(key).emitAll();
+    }
+
     this.$obj = clone($obj);
     const obj = this.$obj;
+    /* ------------------------------------- */
+
+    this.hooks = {};
+    // mantain the same outer behaviors
     Object.keys(obj).forEach(k => {
         // recursive definition of Model
         if(k instanceof Object){
@@ -43,16 +60,15 @@ export class Model extends Object {
     });
   }
 
-  runHook(type, key){
-    // if hook type illegal, break
-    if(!(_eventPool[type])){
-      throw new Error('illegal hook type');
-    }
-    if(!(_eventPool[type].get(key))){
-      throw new Error('illegal hook key');
-    }
+  bindHook(type, key, cb){
+    const eventManager = _eventPool[type].get(key);
+    const tag = eventManager.hook(cb);
+    this.hooks[tag] = {
+      type,
+      key,
+      cb,
+    };
 
-    _eventPool[type].get(key).emitAll();
-
+    return tag;
   }
 }

@@ -38,9 +38,7 @@ export class Model extends Object {
           },
         });
 
-        _eventPool.get.set(k, new EventManager());
-        _eventPool.beforeSet.set(k, new EventManager());
-        _eventPool.afterSet.set(k, new EventManager());
+        _legalHookType.forEach(e => _eventPool[e].set(k, new EventManager()))
     });
   }
 
